@@ -19,25 +19,29 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import Core.Program;
+import Support.BinaryOperations;
 import Support.FileControler;
+import Support.InputWindow;
 
 
 public class MainWindow extends JFrame implements ActionListener{
 	private static final long serialVersionUID = 1L;
 	
 	JPanel panel = new JPanel();
+	InputWindow slave;
 	
 	JTextArea area = new JTextArea();
 	JScrollPane pane = new JScrollPane(area);
 	
-	JButton loadFile = new JButton("Load");
-	JButton compare	 = new JButton("Compare");
-	JButton whiteOut = new JButton("WhiteOut");
+	JButton loadFile = new JButton("Load"),
+			compare	 = new JButton("Compare"),
+			writeTo	 = new JButton("WriteTo"),
+			translate= new JButton("Translate");
 	
 	public MainWindow() {
 		setSize(640, 640);
 		setLocationRelativeTo(null);
-		setTitle("Name Compiler");
+		setTitle("Big Message Package");
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.panel.setBackground(new Color(50, 93,110));
 		setResizable(false);
@@ -57,8 +61,8 @@ public class MainWindow extends JFrame implements ActionListener{
 	private void setContent(){
 		Rectangle rec = this.getBounds();
 		area.setFont(new Font(Font.MONOSPACED,Font.PLAIN,12));
-		panel.add(pane); pane.setBounds
-		(rec.width-Program.AREA_WIDTH+(20*Program.AREA_WIDTH)/320, (rec.height)/80,  (Program.AREA_WIDTH*7)/8, (rec.height*36)/40); 
+		panel.add(pane); 
+		pane.setBounds(rec.width-Program.AREA_WIDTH+(20*Program.AREA_WIDTH)/320, (rec.height)/80,  (Program.AREA_WIDTH*7)/8, (rec.height*36)/40); 
 		area.setEditable(false); area.setBackground(new Color(200,200,200));
 		
 		panel.add(loadFile); 
@@ -70,32 +74,78 @@ public class MainWindow extends JFrame implements ActionListener{
 		compare.addActionListener(this);
 		compare.setEnabled(false);
 		
-		panel.add(whiteOut); 
-		whiteOut.setBounds(rec.width/32, (rec.height*29)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
-		whiteOut.addActionListener(this);
-		whiteOut.setEnabled(false);
+		panel.add(writeTo); 
+		writeTo.setBounds(rec.width/32, (rec.height*29)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
+		writeTo.addActionListener(this);
+		writeTo.setEnabled(false);
+		
+		panel.add(translate); 
+		translate.setBounds(rec.width/32, (rec.height*43)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
+		translate.addActionListener(this);
+		translate.setEnabled(false);
 		
 		panel.setLayout(null);
 		setContentPane(panel);		
+	}
+	
+	public void lockAllButtons(boolean dewIt) {
+		if(dewIt) {
+			loadFile	.setEnabled(false);
+			compare		.setEnabled(false);
+			writeTo		.setEnabled(false);
+			translate	.setEnabled(false);
+		}
+		else {
+			loadFile.setEnabled(true);
+			if(Program.register.size()>0) {
+				writeTo.setEnabled(true);
+				translate.setEnabled(true);
+			}
+			if(Program.register.size()>1) compare.setEnabled(true);
+		}
+		
+	}
+	
+	public void processInput(String input) {
+		this.slave.close();
+		//Program.sysp(input);
+		ArrayList<Byte> internal;
+		ArrayList<Byte> prepImg = Program.getLastImage();
+		FileControler.analyze(prepImg);
+		if(input.length()>Program.imageCharsLimit) {
+			Program.error("The message is too long for the given bitmap, which can take up to "+Program.imageCharsLimit+" charas.");
+			internal  = BinaryOperations.strToBin(input.substring(0, Program.imageCharsLimit-1)+'\4');
+		}
+		else {
+			internal  = BinaryOperations.strToBin(input+'\4');
+		}
+		FileControler.saveToFile(this,FileControler.writeToImage(prepImg, internal));
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object source = event.getSource();
+		lockAllButtons(true);
 		if(source == loadFile) {
 			Program.register.add(FileControler.fileToByteArray(this));
-			if(Program.register.size()>0) whiteOut.setEnabled(true);
+			if(Program.register.size()>0) {
+				writeTo.setEnabled(true);
+				translate.setEnabled(true);
+			}
 			if(Program.register.size()>1) compare.setEnabled(true);
-			
-			ArrayList<Byte> temp = Program.register.get(Program.register.size()-1);			
 		}
 		else
 		if(source == compare) {
 			FileControler.compare(Program.register.get(Program.register.size()-2), Program.register.get(Program.register.size()-1));
 		}
 		else
-		if(source == whiteOut) {
-			FileControler.saveToDefault(FileControler.whiteOut(Program.register.get(Program.register.size()-1)));
+		if(source == writeTo) {
+			slave = new InputWindow();
 		}
+		else
+		if(source == translate) {
+			Program.write("\n[Big Message Package Content]:\n"+FileControler.translateImage(Program.getLastImage()));
+		}
+		lockAllButtons(false);
 	}
 }

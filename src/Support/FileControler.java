@@ -14,7 +14,7 @@ import javax.swing.filechooser.FileFilter;
 import Core.Program;
 
 public class FileControler{
-	public static final int BIT_NO = 3;
+	public static final int BIT_NO = 1;
 	
 	private static JFileChooser 
 			fileChooser = new JFileChooser(".");
@@ -90,7 +90,7 @@ public class FileControler{
 		}
 	}
 	
-	public static boolean writeTo(int index, String message) {
+	/*public static boolean writeTo(int index, String message) {
 		ArrayList<Byte> content = Program.register.get(index);
 		if(content==null) {
 			Program.error("Program attempted to enter a non-existant part of the register.");
@@ -99,33 +99,74 @@ public class FileControler{
 		Program.register.get(index).clear();
 		
 		return true;
-	}
+	}*/
 	
-	public static ArrayList<Byte> whiteOut(ArrayList<Byte> input){
+	
+	public static String translateImage(ArrayList<Byte> input) {
+		ArrayList<Byte> internal = new ArrayList<Byte>();
 		int i 	 = input.get(10) 
 				 + input.get(11)*256 
 				 + input.get(12)*256*256 
 				 + input.get(13)*256*256*256,
-				
-			size =input.size()-64*4,
-			start=i;
-		
-		ArrayList<Byte> temp = new ArrayList<Byte>();
-		temp.addAll(input);
+			size = input.size(),//-64*4,
+			multiplier = (int)Math.pow(2, BIT_NO),
+			start = i;
+		//Program.sysp("Translate - start: "+start+", size: "+size);
 
-		while(i++<size) {
+		while(i<size) {
 			Byte b = input.get(i);
-			//System.out.print(b +"->");
-			//if(start%4 == i%4) input.set(i,(byte) (b - (byte)(b%10)));
-			if(start%4 == i%4) {
-				b = b>0? (byte)(b-b%Math.pow(2, BIT_NO)):(byte)(b+b%Math.pow(2, BIT_NO));
-				input.set(i, b);
+			if(start%4 != (i+1)%4) {
+				b =  (byte)(b%multiplier);
+				internal.add(b);
 			}
-			//System.out.print(input.get(i) + "\n");
+			i++;
 		}
-		size = size-start;
-		Program.log("Done. Image whitened out - "+size*Math.pow(2, BIT_NO)/256+" bytes ready to be written on.");
+		//Program.sysp("Translate - end");
+		return BinaryOperations.binToStr(internal);
+	}
+	
+	public static ArrayList<Byte> writeToImage(ArrayList<Byte> input, ArrayList<Byte> message){
+		int i 	 = input.get(10) 
+				 + input.get(11)*256 
+				 + input.get(12)*256*256 
+				 + input.get(13)*256*256*256,
+			x 	 = 0,	
+			size = input.size(),
+			multiplier = (int)Math.pow(2, BIT_NO),
+			start = i;
+		//Program.sysp("Write - start: "+start+", size: "+size);
+
+		while(i<size) {
+			Byte b = input.get(i);
+			if(start%4 != (i+1)%4) {
+			//if(b.intValue()<0) b = (byte) -b;
+			if(b%multiplier!=0) b = (byte)(b-b%multiplier);
+			if(x<message.size()) {
+				b = b>=0? (byte)(b+message.get(x)):(byte)(b-message.get(x));
+				input.set(i, b);
+				x++;
+			}
+			else break;
+			}
+			i++;
+		}
+		Program.log("Message written to the image. Task accomplished.");
 		return input;
+		
+	}
+	
+	public static void analyze(ArrayList<Byte> input){
+		int start = input.get(10) 
+				 + input.get(11)*256 
+				 + input.get(12)*256*256 
+				 + input.get(13)*256*256*256,
+				
+			size = input.size();
+
+		int limit = ((size-start)*3)/(BinaryOperations.getCharSize()*4);
+		limit--;
+		Program.imageCharsLimit = limit;
+		Program.log("Image analyzed - "+limit*2+" bytes ready to be written on.");
 	}/**/
 	
 	public static boolean saveToDefault(ArrayList<Byte> input) {
@@ -142,6 +183,7 @@ public class FileControler{
 				inStream.write(content/*+44*/);
 			}
 			inStream.close();
+			Program.log("File saved succesfully.\n("+file.getPath()+")");
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -156,7 +198,7 @@ public class FileControler{
 		if(choice == JFileChooser.APPROVE_OPTION)
 			file  = fileChooser.getSelectedFile();
 		else
-			file = new File("C:\\Users\\" + System.getProperty("user.name") + "\\Desktop\\BMPile.bin");
+			file = new File("C:\\Users\\" + System.getProperty("user.name") + "\\Desktop\\BMPile.bmp");
 		
 		return saveToFile(file, input);
 	}

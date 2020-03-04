@@ -3,6 +3,7 @@ package Core;
 import java.util.ArrayList;
 
 import Core.MainWindow;
+import Support.BinaryOperations;
 import Support.FileControler;
 
 public class Program {
@@ -10,6 +11,7 @@ public class Program {
 	public static MainWindow mainWindow;
 	public static final int AREA_WIDTH 	= 440;
 	public static final int LINE_LENGHT = ((AREA_WIDTH/10));
+	public static int imageCharsLimit = 0;
 	public static ArrayList<ArrayList<Byte>> register = new ArrayList<>();
 
 	public static void main(String[] args) {
@@ -19,7 +21,21 @@ public class Program {
 		/**/
 	}
 	
+	public static ArrayList<Byte> getLastImage(){
+		return register.get(Program.register.size()-1);
+	}
+	
 	public static void sleep(long milis) {try {Thread.sleep(milis);} catch (InterruptedException e) {Program.error(e);}}
+	
+	public static void sysp(Object message) {
+		String out;
+		if(message.getClass() == String.class) {
+			out = (String) message;
+		}
+		else out = message.toString();
+
+		System.out.println(message);
+	}
 	
 	public static void error(Object message) {
 		String output = new String();
