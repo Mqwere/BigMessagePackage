@@ -1,10 +1,12 @@
-package Support;
+package Support.Entities;
 
 import java.util.ArrayList;
 
+import Support.Enums.FileType;
+
 public class RegisterEntry {
-	ArrayList<Byte> content;
-	FileType type = null;
+	public ArrayList<Byte> content;
+	public FileType type = null;
 	
 	public RegisterEntry(String ext) {
 		for(FileType type: FileType.values()) if(ext.equalsIgnoreCase(type.extension)) this.type = type;

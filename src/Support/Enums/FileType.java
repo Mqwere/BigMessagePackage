@@ -1,10 +1,10 @@
-package Support;
+package Support.Enums;
 
 public enum FileType {
 	BMP("bmp"), 
 	PNG("png");
 	
-	String extension;
+	public String extension;
 	
 	private FileType(String str) {
 		this.extension = str;

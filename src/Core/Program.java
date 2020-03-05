@@ -4,9 +4,11 @@ import java.util.ArrayList;
 
 import Core.MainWindow;
 import Support.FileControler;
-import Support.RegisterEntry;
+import Support.Entities.RegisterEntry;
 
 public class Program {
+	
+	public static final boolean LOG_ALL=true;
 	
 	public static MainWindow mainWindow;
 	public static final int AREA_WIDTH 	= 440;
@@ -35,6 +37,15 @@ public class Program {
 		else out = message.toString();
 
 		System.out.println(out);
+	}
+	
+	public static void sysLog(Object message) {
+		String out;
+		if(message.getClass() == String.class) {
+			out = (String) message;
+		}
+		else out = message.toString();
+		if(LOG_ALL) System.out.println("[LOG] "+out);
 	}
 	
 	public static void error(Object message) {

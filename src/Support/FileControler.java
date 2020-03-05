@@ -6,12 +6,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 
 import Core.Program;
+import Support.Entities.RegisterEntry;
+import Support.Enums.FileType;
 
 public class FileControler{
 	
@@ -19,6 +22,7 @@ public class FileControler{
 			fileChooser = new JFileChooser(".");
 	
 	public static void setUp() {
+		Program.sysLog("FileControler is setting up...");
 		fileChooser.setFileFilter(new BMPFilter());
 	}
 	
@@ -35,6 +39,7 @@ public class FileControler{
     }
 	
 	public static void compare (RegisterEntry tab1, RegisterEntry tab2) {
+		Program.sysLog("FileControler initializes comparison...");
 		communicate("Initiating comparison...");
 		if(tab1.size()!=tab2.size()) {
 			communicate("Files have different sizes!");
@@ -56,6 +61,7 @@ public class FileControler{
 				communicate("Images are identical!");
 			}
 		}
+		Program.sysLog("FileControler's comparison finished.");
 	}
 	
 	public static void communicate(Object message) {
@@ -63,9 +69,12 @@ public class FileControler{
 	}
 	
 	public static RegisterEntry fileToRegister(JFrame parent) {
+		Program.sysLog("FileControler initializes fileToRegister...");
 		int choice = fileChooser.showOpenDialog(parent);
 		File file;
+		Date end;
 		if(choice == JFileChooser.APPROVE_OPTION) {
+			Stopper.start();
 			file  = fileChooser.getSelectedFile();
 			Program.log("Loading "+file.getAbsolutePath());
 			FileInputStream inStream;
@@ -75,8 +84,11 @@ public class FileControler{
 				ArrayList<Byte> temp = new  ArrayList<Byte>();
 				while((content = inStream.read()) !=-1) {temp.add((byte)(content/*-44*/));}
 				inStream.close();
+				Stopper.stop();
 				Program.log("Done. "+temp.size()+" bytes of data loaded.");	
 				RegisterEntry output = new RegisterEntry(FileControler.getExtension(file),temp);
+				Program.sysLog("FileControler loaded the file.");
+				BinaryOperator.analyze(output);
 				return output;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -95,6 +107,7 @@ public class FileControler{
 	}
 	
 	public static boolean saveToFile(File file, RegisterEntry input) {
+		Program.sysLog("FileControler initializes saveToFile...");
 		FileOutputStream inStream;
 		try {
 			inStream = new FileOutputStream(file);
@@ -105,6 +118,7 @@ public class FileControler{
 			}
 			inStream.close();
 			Program.log("File saved succesfully.\n("+file.getPath()+")");
+			Program.sysLog("File saved succesfully. ("+file.getPath()+")");
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();

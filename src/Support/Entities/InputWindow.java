@@ -1,4 +1,4 @@
-package Support;
+package Support.Entities;
 
 import java.awt.Color;
 import java.awt.event.KeyEvent;
@@ -15,6 +15,12 @@ import Core.Program;
 
 public class InputWindow extends JFrame implements KeyListener{
 	private static final long serialVersionUID = 1L;
+	
+	private static final String SAMPLE_TEXT = 
+			"Portable Network Graphics (PNG, officially pronounced /pɪŋ/ PING, also commonly pronounced /ˌpiːɛnˈdʒiː/ PEE-en-JEE) is a raster-graphics file-format that supports lossless data compression. PNG was developed as an improved, non-patented replacement for Graphics Interchange Format (GIF).\n" + 
+			"PNG supports palette-based images (with palettes of 24-bit RGB or 32-bit RGBA colors), grayscale images (with or without alpha channel for transparency), and full-color non-palette-based RGB or RGBA images. The PNG working group designed the format for transferring images on the Internet, not for professional-quality print graphics, and therefore it does not support non-RGB color spaces such as CMYK. A PNG file contains a single image in an extensible structure of \"chunks\", encoding the basic pixels and other information such as textual comments and integrity checks documented in RFC 2083.\n" + 
+			"PNG files use the file extension PNG or png and are assigned MIME media type image/png. PNG was published as informational RFC 2083 in March 1997 and as an ISO/IEC standard in 2004.";
+
 	
 	MainWindow 	master;
 	JTextArea 	area = new JTextArea();
@@ -63,6 +69,7 @@ public class InputWindow extends JFrame implements KeyListener{
 		if (code == KeyEvent.VK_ENTER) {
 			if(shiftPressed) this.area.append("\n");
 			else {
+				String text = this.area.getText().length()>0?this.area.getText():SAMPLE_TEXT;
 				this.master.processInput(this.area.getText());
 			}
 		}

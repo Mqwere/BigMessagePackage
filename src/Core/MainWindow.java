@@ -6,6 +6,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -13,10 +14,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import Core.Program;
-import Support.BinaryOperations;
+import Support.BinaryOperator;
 import Support.FileControler;
-import Support.InputWindow;
-import Support.RegisterEntry;
+import Support.Stopper;
+import Support.Entities.InputWindow;
+import Support.Entities.RegisterEntry;
 
 
 public class MainWindow extends JFrame implements ActionListener{
@@ -106,15 +108,15 @@ public class MainWindow extends JFrame implements ActionListener{
 		//Program.sysp(input);
 		ArrayList<Byte> internal;
 		RegisterEntry prepImg = Program.getLastImage();
-		BinaryOperations.analyze(prepImg);
 		if(input.length()>Program.imageCharsLimit) {
-			Program.error("The message is too long for the given bitmap, which can take up to "+Program.imageCharsLimit+" charas.");
-			internal  = BinaryOperations.strToBin(input.substring(0, Program.imageCharsLimit-1)+'\4');
+			Program.error("The message is too long for the given image, which can take up to "+Program.imageCharsLimit+" charas.");
+			if(input.length()>0) internal  = BinaryOperator.strToBin(input.substring(0, Program.imageCharsLimit-1)+'\4');
+			else internal = null;
 		}
 		else {
-			internal  = BinaryOperations.strToBin(input+'\4');
+			internal  = BinaryOperator.strToBin(input+'\4');
 		}
-		FileControler.saveToFile(this,BinaryOperations.writeTo(prepImg, internal));
+		if(internal!=null)FileControler.saveToFile(this,BinaryOperator.writeTo(prepImg, internal));
 	}
 
 	@Override
@@ -139,7 +141,7 @@ public class MainWindow extends JFrame implements ActionListener{
 		}
 		else
 		if(source == translate) {
-			Program.write("\n[Big Message Package Content]:\n"+BinaryOperations.translate(Program.getLastImage()));
+			Program.write("\n[Big Message Package Content]:\n"+BinaryOperator.translate(Program.getLastImage()));
 		}
 		lockAllButtons(false);
 	}
