@@ -3,8 +3,8 @@ package Core;
 import java.util.ArrayList;
 
 import Core.MainWindow;
-import Support.BinaryOperations;
 import Support.FileControler;
+import Support.RegisterEntry;
 
 public class Program {
 	
@@ -12,7 +12,7 @@ public class Program {
 	public static final int AREA_WIDTH 	= 440;
 	public static final int LINE_LENGHT = ((AREA_WIDTH/10));
 	public static int imageCharsLimit = 0;
-	public static ArrayList<ArrayList<Byte>> register = new ArrayList<>();
+	public static ArrayList<RegisterEntry> register = new ArrayList<>();
 
 	public static void main(String[] args) {
 		/**/
@@ -21,7 +21,7 @@ public class Program {
 		/**/
 	}
 	
-	public static ArrayList<Byte> getLastImage(){
+	public static RegisterEntry getLastImage(){
 		return register.get(Program.register.size()-1);
 	}
 	
@@ -34,7 +34,7 @@ public class Program {
 		}
 		else out = message.toString();
 
-		System.out.println(message);
+		System.out.println(out);
 	}
 	
 	public static void error(Object message) {

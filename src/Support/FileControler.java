@@ -14,7 +14,6 @@ import javax.swing.filechooser.FileFilter;
 import Core.Program;
 
 public class FileControler{
-	public static final int BIT_NO = 1;
 	
 	private static JFileChooser 
 			fileChooser = new JFileChooser(".");
@@ -35,10 +34,10 @@ public class FileControler{
         return ext;
     }
 	
-	public static void compare (ArrayList<Byte> tab1, ArrayList<Byte> tab2) {
+	public static void compare (RegisterEntry tab1, RegisterEntry tab2) {
 		communicate("Initiating comparison...");
 		if(tab1.size()!=tab2.size()) {
-			communicate("Images have different sizes!");
+			communicate("Files have different sizes!");
 		}
 		else {
 			int diffNo = 0;
@@ -63,7 +62,7 @@ public class FileControler{
 		Program.write("FileCTRL",message);
 	}
 	
-	public static ArrayList<Byte> fileToByteArray(JFrame parent) {
+	public static RegisterEntry fileToRegister(JFrame parent) {
 		int choice = fileChooser.showOpenDialog(parent);
 		File file;
 		if(choice == JFileChooser.APPROVE_OPTION) {
@@ -76,8 +75,9 @@ public class FileControler{
 				ArrayList<Byte> temp = new  ArrayList<Byte>();
 				while((content = inStream.read()) !=-1) {temp.add((byte)(content/*-44*/));}
 				inStream.close();
-				Program.log("Done. "+temp.size()+" bytes of data loaded.");				
-				return temp;
+				Program.log("Done. "+temp.size()+" bytes of data loaded.");	
+				RegisterEntry output = new RegisterEntry(FileControler.getExtension(file),temp);
+				return output;
 			} catch (Exception e) {
 				e.printStackTrace();
 				Program.error("FileControler.saveToFile: "+e.toString());
@@ -90,90 +90,11 @@ public class FileControler{
 		}
 	}
 	
-	/*public static boolean writeTo(int index, String message) {
-		ArrayList<Byte> content = Program.register.get(index);
-		if(content==null) {
-			Program.error("Program attempted to enter a non-existant part of the register.");
-			return false;
-		}
-		Program.register.get(index).clear();
-		
-		return true;
-	}*/
-	
-	
-	public static String translateImage(ArrayList<Byte> input) {
-		ArrayList<Byte> internal = new ArrayList<Byte>();
-		int i 	 = input.get(10) 
-				 + input.get(11)*256 
-				 + input.get(12)*256*256 
-				 + input.get(13)*256*256*256,
-			size = input.size(),//-64*4,
-			multiplier = (int)Math.pow(2, BIT_NO),
-			start = i;
-		//Program.sysp("Translate - start: "+start+", size: "+size);
-
-		while(i<size) {
-			Byte b = input.get(i);
-			if(start%4 != (i+1)%4) {
-				b =  (byte)(b%multiplier);
-				internal.add(b);
-			}
-			i++;
-		}
-		//Program.sysp("Translate - end");
-		return BinaryOperations.binToStr(internal);
-	}
-	
-	public static ArrayList<Byte> writeToImage(ArrayList<Byte> input, ArrayList<Byte> message){
-		int i 	 = input.get(10) 
-				 + input.get(11)*256 
-				 + input.get(12)*256*256 
-				 + input.get(13)*256*256*256,
-			x 	 = 0,	
-			size = input.size(),
-			multiplier = (int)Math.pow(2, BIT_NO),
-			start = i;
-		//Program.sysp("Write - start: "+start+", size: "+size);
-
-		while(i<size) {
-			Byte b = input.get(i);
-			if(start%4 != (i+1)%4) {
-			//if(b.intValue()<0) b = (byte) -b;
-			if(b%multiplier!=0) b = (byte)(b-b%multiplier);
-			if(x<message.size()) {
-				b = b>=0? (byte)(b+message.get(x)):(byte)(b-message.get(x));
-				input.set(i, b);
-				x++;
-			}
-			else break;
-			}
-			i++;
-		}
-		Program.log("Message written to the image. Task accomplished.");
-		return input;
-		
-	}
-	
-	public static void analyze(ArrayList<Byte> input){
-		int start = input.get(10) 
-				 + input.get(11)*256 
-				 + input.get(12)*256*256 
-				 + input.get(13)*256*256*256,
-				
-			size = input.size();
-
-		int limit = ((size-start)*3)/(BinaryOperations.getCharSize()*4);
-		limit--;
-		Program.imageCharsLimit = limit;
-		Program.log("Image analyzed - "+limit*2+" bytes ready to be written on.");
-	}/**/
-	
-	public static boolean saveToDefault(ArrayList<Byte> input) {
+	public static boolean saveToDefault(RegisterEntry input) {
 		return saveToFile(new File("C:\\Users\\" + System.getProperty("user.name") + "\\Desktop\\BMPile.bmp"), input);
 	}
 	
-	public static boolean saveToFile(File file, ArrayList<Byte> input) {
+	public static boolean saveToFile(File file, RegisterEntry input) {
 		FileOutputStream inStream;
 		try {
 			inStream = new FileOutputStream(file);
@@ -192,7 +113,7 @@ public class FileControler{
 		}
 	}
 	
-	public static boolean saveToFile(JFrame parent, ArrayList<Byte> input) {
+	public static boolean saveToFile(JFrame parent, RegisterEntry input) {
 		int choice = fileChooser.showSaveDialog(parent);
 		File file;
 		if(choice == JFileChooser.APPROVE_OPTION)
@@ -210,14 +131,14 @@ class BMPFilter extends FileFilter{
 	public boolean accept(File file) {
 		String ext = FileControler.getExtension(file);
 		if(ext == null) 	return true;
-		else if(ext.toLowerCase().equals("bmp")) return true;
+		else if(ext.toLowerCase().equals(FileType.BMP.extension)||ext.toLowerCase().equals(FileType.PNG.extension)) return true;
 		//else if(ext.toLowerCase().equals("png")) return true;
 		else return false;
 	}
 
 	@Override
 	public String getDescription() {
-		return "BMP";
+		return "Applicable Image Files";
 	}
 	
 }

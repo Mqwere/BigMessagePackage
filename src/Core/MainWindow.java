@@ -8,20 +8,15 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSlider;
 import javax.swing.JTextArea;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import Core.Program;
 import Support.BinaryOperations;
 import Support.FileControler;
 import Support.InputWindow;
+import Support.RegisterEntry;
 
 
 public class MainWindow extends JFrame implements ActionListener{
@@ -70,17 +65,17 @@ public class MainWindow extends JFrame implements ActionListener{
 		loadFile.addActionListener(this);
 		
 		panel.add(compare); 
-		compare.setBounds(rec.width/32, (rec.height*15)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
+		compare.setBounds(rec.width/32, (rec.height*16)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
 		compare.addActionListener(this);
 		compare.setEnabled(false);
 		
 		panel.add(writeTo); 
-		writeTo.setBounds(rec.width/32, (rec.height*29)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
+		writeTo.setBounds(rec.width/32, (rec.height*31)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
 		writeTo.addActionListener(this);
 		writeTo.setEnabled(false);
 		
 		panel.add(translate); 
-		translate.setBounds(rec.width/32, (rec.height*43)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
+		translate.setBounds(rec.width/32, (rec.height*46)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
 		translate.addActionListener(this);
 		translate.setEnabled(false);
 		
@@ -98,7 +93,7 @@ public class MainWindow extends JFrame implements ActionListener{
 		else {
 			loadFile.setEnabled(true);
 			if(Program.register.size()>0) {
-				writeTo.setEnabled(true);
+				writeTo	.setEnabled(true);
 				translate.setEnabled(true);
 			}
 			if(Program.register.size()>1) compare.setEnabled(true);
@@ -110,8 +105,8 @@ public class MainWindow extends JFrame implements ActionListener{
 		this.slave.close();
 		//Program.sysp(input);
 		ArrayList<Byte> internal;
-		ArrayList<Byte> prepImg = Program.getLastImage();
-		FileControler.analyze(prepImg);
+		RegisterEntry prepImg = Program.getLastImage();
+		BinaryOperations.analyze(prepImg);
 		if(input.length()>Program.imageCharsLimit) {
 			Program.error("The message is too long for the given bitmap, which can take up to "+Program.imageCharsLimit+" charas.");
 			internal  = BinaryOperations.strToBin(input.substring(0, Program.imageCharsLimit-1)+'\4');
@@ -119,7 +114,7 @@ public class MainWindow extends JFrame implements ActionListener{
 		else {
 			internal  = BinaryOperations.strToBin(input+'\4');
 		}
-		FileControler.saveToFile(this,FileControler.writeToImage(prepImg, internal));
+		FileControler.saveToFile(this,BinaryOperations.writeTo(prepImg, internal));
 	}
 
 	@Override
@@ -127,7 +122,7 @@ public class MainWindow extends JFrame implements ActionListener{
 		Object source = event.getSource();
 		lockAllButtons(true);
 		if(source == loadFile) {
-			Program.register.add(FileControler.fileToByteArray(this));
+			Program.register.add(FileControler.fileToRegister(this));
 			if(Program.register.size()>0) {
 				writeTo.setEnabled(true);
 				translate.setEnabled(true);
@@ -144,7 +139,7 @@ public class MainWindow extends JFrame implements ActionListener{
 		}
 		else
 		if(source == translate) {
-			Program.write("\n[Big Message Package Content]:\n"+FileControler.translateImage(Program.getLastImage()));
+			Program.write("\n[Big Message Package Content]:\n"+BinaryOperations.translate(Program.getLastImage()));
 		}
 		lockAllButtons(false);
 	}
