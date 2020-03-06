@@ -26,10 +26,6 @@ public class BinaryOperator {
 		return result;
 	}
 	
-	public static int digiNo(int number) {
-		return Integer.toString(number).length();
-	}
-	
 	@SuppressWarnings("unused")
 	public static int getCharSize() {
 		int base = (16/BIT_NO),
@@ -190,13 +186,15 @@ public class BinaryOperator {
 	public static ArrayList<Byte> pngToBMP(ArrayList<Byte> input){
 		Program.log("Initializing conversion from PNG to BMP...");
 		byte[] data = Converter.ArrayListToByte(input);
+		Program.sysLog("Converter converted arrList to an array of size "+data.length);
         BufferedImage imag;
 		try {
 			imag = ImageIO.read(new ByteArrayInputStream(data));
-	        ByteArrayOutputStream baos=new ByteArrayOutputStream(1000);
+			ByteArrayOutputStream baos=new ByteArrayOutputStream(1000);
 	        ImageIO.write(imag, "BMP", baos);
 	        byte[] output = baos.toByteArray();
 			Program.log("Conversion accomplished!");
+			Program.sysLog("Output of converted function has a size of "+output.length);
 	        return Converter.ByteToArrayList(output);
 		} catch (IOException e) {
 			Program.error(e);
@@ -213,6 +211,10 @@ public class BinaryOperator {
 			PNGChunkCollector.collect(input);
 			input = new RegisterEntry(FileType.BMP,pngToBMP(input.content));
 		case BMP:
+			if(input.size()<14) {
+				Program.error("Provided image does not have enough bytes to even be considered a carrier. Its size is "+input.size());
+				return null;
+			}
 			int start = input.get(10) 
 					 + input.get(11)*256 
 					 + input.get(12)*256*256 

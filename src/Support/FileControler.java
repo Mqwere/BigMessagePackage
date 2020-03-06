@@ -40,7 +40,7 @@ public class FileControler{
         if(i > 0 && i < filename.length() - 1)
             ext = filename.substring(i + 1).toLowerCase();
 
-        return ext;
+        return ext==null? "png":ext;
     }
 	
 	public static void compare (RegisterEntry tab1, RegisterEntry tab2) {
@@ -142,9 +142,8 @@ public class FileControler{
 	public static boolean saveToFile(File file, RegisterEntry input) {
 		Program.sysLog("FileControler initializes saveToFile...");
 		FileOutputStream inStream;
-		switch(getExtension(file).toUpperCase()){
-			default:
-				file = new File(file.getAbsolutePath()+".bmp");
+		switch(getExtension(file)){
+			case "bmp":
 			case "BMP":
 			try {
 				inStream = new FileOutputStream(file);
@@ -161,6 +160,9 @@ public class FileControler{
 				Program.error("FileControler.saveToFile: "+e.toString());
 				return false;
 			}
+			default:
+				file = new File(file.getAbsolutePath()+".png");
+			case "png":
 			case "PNG"://TODO
 			try {
 				BufferedImage image = ImageIO.read(new ByteArrayInputStream(Converter.ArrayListToByte(input.content)));

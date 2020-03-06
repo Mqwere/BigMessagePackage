@@ -131,7 +131,9 @@ public class MainWindow extends JFrame implements ActionListener{
 		Object source = event.getSource();
 		lockAllButtons(true);
 		if(source == loadFile) {
-			Program.register.add(FileControler.fileToRegister(this));
+			RegisterEntry entry = FileControler.fileToRegister(this);
+			if(entry!=null) Program.register.add(entry);
+			else Program.error("Given Image file was not added to the register. Please try another image.");
 			if(Program.register.size()>0) {
 				writeTo.setEnabled(true);
 				translate.setEnabled(true);
