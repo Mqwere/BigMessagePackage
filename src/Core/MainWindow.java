@@ -5,20 +5,26 @@ import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import Core.Program;
 import Support.BinaryOperator;
+import Support.Converter;
 import Support.FileControler;
-import Support.Stopper;
 import Support.Entities.InputWindow;
 import Support.Entities.RegisterEntry;
+import Support.Enums.FileType;
 
 
 public class MainWindow extends JFrame implements ActionListener{
@@ -55,6 +61,19 @@ public class MainWindow extends JFrame implements ActionListener{
 		this.addToArea(temp);
 	}
 	
+	private int multiplier = 0;
+	private void setUp(JComponent component) {
+		Rectangle rec = this.getBounds();
+		panel.add(component); 
+		component.setBounds(rec.width/32, ((1 + 15*multiplier++)*rec.height)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
+		
+		if(component.getClass()==JButton.class) {
+			JButton button = (JButton) component;
+			button.addActionListener(this);
+			component.setEnabled(false);
+		}
+	}
+	
 	private void setContent(){
 		Rectangle rec = this.getBounds();
 		area.setFont(new Font(Font.MONOSPACED,Font.PLAIN,12));
@@ -62,24 +81,12 @@ public class MainWindow extends JFrame implements ActionListener{
 		pane.setBounds(rec.width-Program.AREA_WIDTH+(20*Program.AREA_WIDTH)/320, (rec.height)/80,  (Program.AREA_WIDTH*7)/8, (rec.height*36)/40); 
 		area.setEditable(false); area.setBackground(new Color(200,200,200));
 		
-		panel.add(loadFile); 
-		loadFile.setBounds(rec.width/32, (rec.height)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
-		loadFile.addActionListener(this);
+		setUp(loadFile);
+		loadFile.setEnabled(true);
 		
-		panel.add(compare); 
-		compare.setBounds(rec.width/32, (rec.height*16)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
-		compare.addActionListener(this);
-		compare.setEnabled(false);
-		
-		panel.add(writeTo); 
-		writeTo.setBounds(rec.width/32, (rec.height*31)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
-		writeTo.addActionListener(this);
-		writeTo.setEnabled(false);
-		
-		panel.add(translate); 
-		translate.setBounds(rec.width/32, (rec.height*46)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
-		translate.addActionListener(this);
-		translate.setEnabled(false);
+		setUp(compare);
+		setUp(writeTo);
+		setUp(translate); 
 		
 		panel.setLayout(null);
 		setContentPane(panel);		
@@ -143,6 +150,7 @@ public class MainWindow extends JFrame implements ActionListener{
 		if(source == translate) {
 			Program.write("\n[Big Message Package Content]:\n"+BinaryOperator.translate(Program.getLastImage()));
 		}
+		
 		lockAllButtons(false);
 	}
 }

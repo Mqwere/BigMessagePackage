@@ -12,6 +12,7 @@ public class Program {
 	
 	public static MainWindow mainWindow;
 	public static final int AREA_WIDTH 	= 440;
+	public static final String DEFAULT_FILE= "C:\\Users\\" + System.getProperty("user.name") + "\\Desktop\\BMPile.png";
 	public static final int LINE_LENGHT = ((AREA_WIDTH/10));
 	public static int imageCharsLimit = 0;
 	public static ArrayList<RegisterEntry> register = new ArrayList<>();

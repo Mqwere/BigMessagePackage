@@ -3,6 +3,7 @@ package Support.Entities;
 import Core.Program;
 import Support.Enums.ChunkType;
 
+@Deprecated
 public class PNGChunk {
 	public int startIndex;
 	public int endIndex;

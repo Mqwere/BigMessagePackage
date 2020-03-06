@@ -1,15 +1,22 @@
 package Support;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+
+import javax.imageio.ImageIO;
 
 import Core.Program;
 import Support.Entities.PNGChunk;
 import Support.Entities.RegisterEntry;
 import Support.Enums.ChunkType;
+import Support.Enums.FileType;
 
 public class BinaryOperator {
-	public static final int BIT_NO = 1;
+	public static final int BIT_NO = 4;
 	
 	public static int pow2(int power) {return pow(2,power);}
 	
@@ -82,6 +89,7 @@ public class BinaryOperator {
 	public static String translate(RegisterEntry input) {
 		Program.sysLog("BinaryOperator initializes translation for type "+input.type+"...");
 		switch(input.type) {
+			case PNG:
 			case BMP:
 				ArrayList<Byte> internal = new ArrayList<Byte>();
 				int i 	 = input.get(10) 
@@ -102,9 +110,9 @@ public class BinaryOperator {
 				}
 				Program.sysLog("BinaryOperator finished translating.");
 				return BinaryOperator.binToStr(internal);
-			case PNG: //TODO
+			/*case PNG: //TODO
 				Program.sysLog("BinaryOperator finished translating.");
-				return "unimplemented";
+				return "unimplemented";/**/
 				
 			default: 
 				Program.sysLog("BinaryOperator finished translating.");
@@ -116,6 +124,7 @@ public class BinaryOperator {
 		Program.sysLog("BinaryOperator initializes writeTo for type "+input.type+"...");
 		int multiplier = (int)Math.pow(2, BIT_NO);
 		switch(input.type) {
+			case PNG:
 			case BMP:
 			int i 	 = input.get(10) 
 				 	 + input.get(11)*256 
@@ -124,11 +133,14 @@ public class BinaryOperator {
 				 x 	 = 0,	
 				 size = input.size(),
 				 start = i;
-			//Program.sysp("Write - start: "+start+", size: "+size);
+			Program.sysLog("Write - start: "+start+", size: "+size);
 
 			while(i<size) {
 				Byte b = input.get(i);
 				if(start%4 != (i+1)%4) {
+				//if(start%4 != (i+2)%4) {
+				//if(start%4 != (i+3)%4) {
+				//if(start%4 != (i+4)%4) {
 					//if(b.intValue()<0) b = (byte) -b;
 					if(b%multiplier!=0) b = (byte)(b-b%multiplier);
 					if(x<message.size()) {
@@ -143,7 +155,7 @@ public class BinaryOperator {
 			Program.log("Message written to the image. Task accomplished.");
 			return input;
 			
-			case PNG: 
+			/*case PNG: 
 				ArrayList<PNGChunk> content = new ArrayList<>();
 				content.addAll(PNGChunkCollector.getLastList());
 				int chunkNo = content.size(), px = 0;
@@ -168,18 +180,38 @@ public class BinaryOperator {
 					}
 				}
 				
-				return input; //TODO
+				return input; //TODO/**/
 			
 			default: return input;
 		}
 		
 	}
 	
-	public static void analyze(RegisterEntry input){
+	public static ArrayList<Byte> pngToBMP(ArrayList<Byte> input){
+		Program.log("Initializing conversion from PNG to BMP...");
+		byte[] data = Converter.ArrayListToByte(input);
+        BufferedImage imag;
+		try {
+			imag = ImageIO.read(new ByteArrayInputStream(data));
+	        ByteArrayOutputStream baos=new ByteArrayOutputStream(1000);
+	        ImageIO.write(imag, "BMP", baos);
+	        byte[] output = baos.toByteArray();
+			Program.log("Conversion accomplished!");
+	        return Converter.ByteToArrayList(output);
+		} catch (IOException e) {
+			Program.error(e);
+			return null;
+		}
+	}
+	
+	public static RegisterEntry analyze(RegisterEntry input){
 		Program.sysLog("BinaryOperator initializes analysis for type "+input.type+"...");
 		Date entry = new Date(), end;
 		int limit = 0;
 		switch(input.type) {
+		case PNG:
+			PNGChunkCollector.collect(input);
+			input = new RegisterEntry(FileType.BMP,pngToBMP(input.content));
 		case BMP:
 			int start = input.get(10) 
 					 + input.get(11)*256 
@@ -189,9 +221,7 @@ public class BinaryOperator {
 				size = input.size();
 
 			limit = ((size-start)*3)/(BinaryOperator.getCharSize()*4);
-			Program.sysLog("BMP Done");
-			break;
-		case PNG: //TODO?
+		/*case PNG: //TODO?
 			PNGChunkCollector.collect(input);
 			ArrayList<PNGChunk> content = new ArrayList<>();
 			content.addAll(PNGChunkCollector.getLastList());
@@ -202,7 +232,7 @@ public class BinaryOperator {
 			}
 			limit = byteNo/BinaryOperator.getCharSize();
 			Program.sysLog("PNG Done");
-			break;
+			break;/**/
 		default:
 			break;
 		}
@@ -218,6 +248,8 @@ public class BinaryOperator {
 		Program.write("Loading took "+Stopper.evaluate()+" s");
 		Program.write("Analysis took "+ String.format("%1$,.2f",((double)diff/1000d)) +" s\n"+input.size() 
 		+" bytes processed, making the avevage speed "+msg);
+		
+		return input;
 	}/**/
 	
 }

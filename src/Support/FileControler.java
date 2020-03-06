@@ -1,13 +1,18 @@
 package Support;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
@@ -68,6 +73,34 @@ public class FileControler{
 		Program.write("FileCTRL",message);
 	}
 	
+	public static ArrayList<Byte> fileToArr(JFrame parent){
+		Program.sysLog("FileControler initializes fileToRegister...");
+		int choice = fileChooser.showOpenDialog(parent);
+		File file;
+		if(choice == JFileChooser.APPROVE_OPTION) {
+			file  = fileChooser.getSelectedFile();
+			Program.log("Loading "+file.getAbsolutePath());
+			FileInputStream inStream;
+			try {
+				inStream = new FileInputStream(file);
+				int content;
+				ArrayList<Byte> temp = new  ArrayList<Byte>();
+				while((content = inStream.read()) !=-1) {temp.add((byte)(content/*-44*/));}
+				inStream.close();
+				return temp;
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				Program.error("FileControler.saveToFile: "+e.toString());
+				return null;
+			}
+		}
+		else {
+			Program.error("File Controler.fileToByteArray: choice is NULL");
+			return null;
+		}
+	}
+	
 	public static RegisterEntry fileToRegister(JFrame parent) {
 		Program.sysLog("FileControler initializes fileToRegister...");
 		int choice = fileChooser.showOpenDialog(parent);
@@ -88,7 +121,7 @@ public class FileControler{
 				Program.log("Done. "+temp.size()+" bytes of data loaded.");	
 				RegisterEntry output = new RegisterEntry(FileControler.getExtension(file),temp);
 				Program.sysLog("FileControler loaded the file.");
-				BinaryOperator.analyze(output);
+				output = BinaryOperator.analyze(output);
 				return output;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -103,27 +136,42 @@ public class FileControler{
 	}
 	
 	public static boolean saveToDefault(RegisterEntry input) {
-		return saveToFile(new File("C:\\Users\\" + System.getProperty("user.name") + "\\Desktop\\BMPile.bmp"), input);
+		return saveToFile(new File(Program.DEFAULT_FILE), input);
 	}
 	
 	public static boolean saveToFile(File file, RegisterEntry input) {
 		Program.sysLog("FileControler initializes saveToFile...");
 		FileOutputStream inStream;
-		try {
-			inStream = new FileOutputStream(file);
-			int content;
-			for(int i=0; i<input.size();i++) {
-				content = (int)input.get(i);
-				inStream.write(content/*+44*/);
+		switch(getExtension(file).toUpperCase()){
+			default:
+				file = new File(file.getAbsolutePath()+".bmp");
+			case "BMP":
+			try {
+				inStream = new FileOutputStream(file);
+				int content;
+				for(int i=0; i<input.size();i++) {
+					content = (int)input.get(i);
+					inStream.write(content/*+44*/);
+				}
+				inStream.close();
+				Program.log("File saved succesfully.\n("+file.getPath()+")");
+				Program.sysLog("File saved succesfully. ("+file.getPath()+")");
+				return true;
+			} catch (IOException e) {
+				Program.error("FileControler.saveToFile: "+e.toString());
+				return false;
 			}
-			inStream.close();
-			Program.log("File saved succesfully.\n("+file.getPath()+")");
-			Program.sysLog("File saved succesfully. ("+file.getPath()+")");
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-			Program.error("FileControler.saveToFile: "+e.toString());
-			return false;
+			case "PNG"://TODO
+			try {
+				BufferedImage image = ImageIO.read(new ByteArrayInputStream(Converter.ArrayListToByte(input.content)));
+				ImageIO.write(image,"png",file);
+				Program.log("File saved succesfully.\n("+file.getPath()+")");
+				Program.sysLog("File saved succesfully. ("+file.getPath()+")");
+				return true;
+			} catch (IOException e) {
+				Program.error("FileControler.saveToFile: "+e.toString());
+				return false;
+			}
 		}
 	}
 	
