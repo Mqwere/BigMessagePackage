@@ -7,6 +7,7 @@ import Support.Entities.PNGChunk;
 import Support.Entities.RegisterEntry;
 import Support.Enums.ChunkType;
 
+@Deprecated
 public class PNGChunkCollector {
 	private static ArrayList<ArrayList<PNGChunk>> collection = new ArrayList<>();
 	

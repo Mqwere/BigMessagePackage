@@ -1,5 +1,6 @@
 package Support.Enums;
 
+@Deprecated
 public enum ChunkType {
 	IHDR,
 	PLTE,
