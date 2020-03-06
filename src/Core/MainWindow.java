@@ -5,13 +5,8 @@ import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -20,11 +15,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import Core.Program;
 import Support.BinaryOperator;
-import Support.Converter;
 import Support.FileControler;
 import Support.Entities.InputWindow;
 import Support.Entities.RegisterEntry;
-import Support.Enums.FileType;
 
 
 public class MainWindow extends JFrame implements ActionListener{
@@ -42,7 +35,7 @@ public class MainWindow extends JFrame implements ActionListener{
 			translate= new JButton("Translate");
 	
 	public MainWindow() {
-		setSize(640, 640);
+		setSize(200+Program.AREA_WIDTH, 640);
 		setLocationRelativeTo(null);
 		setTitle("Big Message Package");
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);

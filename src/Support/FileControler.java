@@ -161,7 +161,7 @@ public class FileControler{
 				return false;
 			}
 			default:
-				file = new File(file.getAbsolutePath()+".png");
+				file = new File(file.getPath()+".png");
 			case "png":
 			case "PNG"://TODO
 			try {
@@ -183,7 +183,7 @@ public class FileControler{
 		if(choice == JFileChooser.APPROVE_OPTION)
 			file  = fileChooser.getSelectedFile();
 		else
-			file = new File("C:\\Users\\" + System.getProperty("user.name") + "\\Desktop\\BMPile.bmp");
+			return false;
 		
 		return saveToFile(file, input);
 	}

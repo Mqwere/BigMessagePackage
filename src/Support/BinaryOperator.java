@@ -249,7 +249,7 @@ public class BinaryOperator {
 		String msg = speed>1000d? String.format("%1$,.2f",(speed/1000))+" MB/s": speed<1d? String.format("%1$,.2f",(speed*1000))+" B/s":String.format("%1$,.2f",speed)+" KB/s";
 		Program.write("Loading took "+Stopper.evaluate()+" s");
 		Program.write("Analysis took "+ String.format("%1$,.2f",((double)diff/1000d)) +" s\n"+input.size() 
-		+" bytes processed, making the avevage speed "+msg);
+		+" bytes processed, making the average analysis speed "+msg);
 		
 		return input;
 	}/**/
