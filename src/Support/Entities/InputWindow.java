@@ -23,9 +23,7 @@ public class InputWindow extends JFrame implements KeyListener{
 			"PNG supports palette-based images (with palettes of 24-bit RGB or 32-bit RGBA colors), grayscale images (with or without alpha channel for transparency), and full-color non-palette-based RGB or RGBA images. The PNG working group designed the format for transferring images on the Internet, not for professional-quality print graphics, and therefore it does not support non-RGB color spaces such as CMYK. A PNG file contains a single image in an extensible structure of \"chunks\", encoding the basic pixels and other information such as textual comments and integrity checks documented in RFC 2083.\n" + 
 			"PNG files use the file extension PNG or png and are assigned MIME media type image/png. PNG was published as informational RFC 2083 in March 1997 and as an ISO/IEC standard in 2004.";
 	
-	private static final int AREA_WIDTH = 440;
 	private static final int AREA_HEIGHT =220;
-	private static final int LINE_LENGTH= AREA_WIDTH/10;
 	
 	MainWindow 	master;
 	JTextArea 	area = new JTextArea();
@@ -40,7 +38,7 @@ public class InputWindow extends JFrame implements KeyListener{
 	}
 	
 	public InputWindow(MainWindow master) {
-		setSize(AREA_WIDTH+60, 110+AREA_HEIGHT);
+		setSize(Program.AREA_WIDTH+60, 110+AREA_HEIGHT);
 		this.master = master;
 		setLocationRelativeTo(null);
 		setTitle("Message input window");
@@ -54,10 +52,10 @@ public class InputWindow extends JFrame implements KeyListener{
 	
 	private void setContent(){
 		panel.add(info);
-		info.setBounds(30, 15, AREA_WIDTH, 20);
+		info.setBounds(30, 15, Program.AREA_WIDTH, 20);
 			
 		panel.add(pane);
-		pane.setBounds(30, 40, AREA_WIDTH, AREA_HEIGHT);
+		pane.setBounds(30, 40, Program.AREA_WIDTH, AREA_HEIGHT);
 		area.setBackground(new Color(200,200,200));
 		area.setFont(new Font(Font.MONOSPACED,Font.PLAIN,12));	
 		area.addKeyListener(this);
@@ -77,9 +75,9 @@ public class InputWindow extends JFrame implements KeyListener{
 		i = i>=0? i:0;
 		String content = text.substring(i);
 		//Program.sysLog("i: "+i+" content length: "+content.length()+" line length: "+LINE_LENGTH);
-		if(content.length()>=LINE_LENGTH) {
+		if(content.length()>=Program.LINE_LENGTH) {
 			String[] subcontent = content.split(" ");
-			if(subcontent[subcontent.length-1].length()>=LINE_LENGTH) {
+			if(subcontent[subcontent.length-1].length()>=Program.LINE_LENGTH) {
 				text = text+ "-\n";
 			}
 			else {
@@ -98,7 +96,7 @@ public class InputWindow extends JFrame implements KeyListener{
 			if(shiftPressed) this.area.append("\n");
 			else {
 				String text = this.area.getText().length()>0?this.area.getText():SAMPLE_TEXT;
-				this.master.processInput(this.area.getText());
+				this.master.processInput(text);
 			}
 		}
 		else
@@ -121,7 +119,7 @@ public class InputWindow extends JFrame implements KeyListener{
 
 	@Override
 	public void keyTyped(KeyEvent arg0) {
-		// TODO Auto-generated method stub
+		//Auto-generated method stub
 		
 	}
 

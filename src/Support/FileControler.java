@@ -6,11 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
@@ -105,7 +102,6 @@ public class FileControler{
 		Program.sysLog("FileControler initializes fileToRegister...");
 		int choice = fileChooser.showOpenDialog(parent);
 		File file;
-		Date end;
 		if(choice == JFileChooser.APPROVE_OPTION) {
 			Stopper.start();
 			file  = fileChooser.getSelectedFile();

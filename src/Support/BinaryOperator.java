@@ -15,6 +15,7 @@ import Support.Entities.RegisterEntry;
 import Support.Enums.ChunkType;
 import Support.Enums.FileType;
 
+@SuppressWarnings({ "unused", "deprecation" })
 public class BinaryOperator {
 	public static final int BIT_NO = 4;
 	
@@ -26,7 +27,6 @@ public class BinaryOperator {
 		return result;
 	}
 	
-	@SuppressWarnings("unused")
 	public static int getCharSize() {
 		int base = (16/BIT_NO),
 			add = (16%BIT_NO)>0? 1:0,
@@ -106,7 +106,7 @@ public class BinaryOperator {
 				}
 				Program.sysLog("BinaryOperator finished translating.");
 				return BinaryOperator.binToStr(internal);
-			/*case PNG: //TODO
+			/*case PNG:
 				Program.sysLog("BinaryOperator finished translating.");
 				return "unimplemented";/**/
 				
@@ -176,7 +176,7 @@ public class BinaryOperator {
 					}
 				}
 				
-				return input; //TODO/**/
+				return input;/**/
 			
 			default: return input;
 		}
@@ -223,7 +223,7 @@ public class BinaryOperator {
 				size = input.size();
 
 			limit = ((size-start)*3)/(BinaryOperator.getCharSize()*4);
-		/*case PNG: //TODO?
+		/*case PNG:
 			PNGChunkCollector.collect(input);
 			ArrayList<PNGChunk> content = new ArrayList<>();
 			content.addAll(PNGChunkCollector.getLastList());

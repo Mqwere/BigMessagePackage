@@ -8,12 +8,12 @@ import Support.Entities.RegisterEntry;
 
 public class Program {
 	
-	public static final boolean LOG_ALL=true;
+	public static final boolean LOG_ALL=false;
 	
 	public static MainWindow mainWindow;
 	public static final int AREA_WIDTH 	= 440;
 	public static final String DEFAULT_FILE= "C:\\Users\\" + System.getProperty("user.name") + "\\Desktop\\BMPile.png";
-	public static final int LINE_LENGHT = ((AREA_WIDTH/10));
+	public static final int LINE_LENGTH = ((AREA_WIDTH/10));
 	public static int imageCharsLimit = 0;
 	public static ArrayList<RegisterEntry> register = new ArrayList<>();
 
@@ -106,7 +106,7 @@ public class Program {
 		}
 		
 		for(int i=0; i<offset;i++) tab+=" ";
-		if(mess.length()<=LINE_LENGHT) {
+		if(mess.length()<=LINE_LENGTH) {
 			mainWindow.addToArea(mess);		
 		}
 		else {
@@ -117,11 +117,11 @@ public class Program {
 				String[] pieces = message.split(" ");
 				int 	 length = pieces.length, temp = 0;
 				for(int i = 0; i<length;i++) {
-					if(temp + pieces[i].length()>(LINE_LENGHT-offset)) {
-						if(pieces[i].length()>(LINE_LENGHT-offset)) {
+					if(temp + pieces[i].length()>(LINE_LENGTH-offset)) {
+						if(pieces[i].length()>(LINE_LENGTH-offset)) {
 							if(temp!=0) mainWindow.addToArea(" ");
 							for(int x=0; x<pieces[i].length();x++) {
-								if(temp%(LINE_LENGHT-offset)==(LINE_LENGHT-offset)-1) {
+								if(temp%(LINE_LENGTH-offset)==(LINE_LENGTH-offset)-1) {
 									mainWindow.addToArea("-"+"\n"+tab);
 									temp = 0;
 								}
