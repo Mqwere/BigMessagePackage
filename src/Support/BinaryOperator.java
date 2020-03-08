@@ -18,6 +18,26 @@ import Support.Enums.FileType;
 @SuppressWarnings({ "unused", "deprecation" })
 public class BinaryOperator {
 	public static final int BIT_NO = 4;
+	public static String lastMessage = new String();
+	
+	public static boolean compare(String first, String second) {
+		int diffNo = 0, size;
+		String result ="";
+		if(first.length()!=second.length()) {
+			result+="Strings' length are different!";
+			size = first.length()>second.length()?second.length():first.length();
+		}
+		else size = first.length();
+		
+		for(int i=0; i<size;i++) if(first.charAt(i)!=second.charAt(i)) diffNo++;
+		
+		if(result.length()>0) result+="\nAs far as we can check them, tho:\n";
+		result+=diffNo>0? "They are different on "+diffNo+" possitions.":"They are the same.";
+		
+		Program.sysLog(result);
+		
+		return !(diffNo>0);
+	}
 	
 	public static int pow2(int power) {return pow(2,power);}
 	
@@ -35,11 +55,10 @@ public class BinaryOperator {
 		return result;
 	}
 	
-	public static int getMultiplier() {
-		return pow2(BIT_NO);
-	}
+	public static int getMultiplier() {return pow2(BIT_NO);}
 	
 	public static ArrayList<Byte> strToBin(String input) {
+		lastMessage = new String(); lastMessage += input;
 		Program.sysLog("BinaryOperator initializes str->bin...");
 		ArrayList<Byte> internal = new ArrayList<Byte>();
 		/// char has 16 bits of data... so we are gonna need ceil(16/BIT_NO) places to fill our one chara with
@@ -54,7 +73,8 @@ public class BinaryOperator {
 			}
 		}
 		Program.sysLog("BinaryOperator finished str->bin");
-		return internal;
+		if(compare(input,binToStr(internal))) return internal;
+		else return null;
 	}
 	
 	public static String binToStr(ArrayList<Byte> array) {
@@ -116,6 +136,12 @@ public class BinaryOperator {
 		}
 	}
 	
+	public static byte stripModulo(byte b) {
+		int multiplier = (int)Math.pow(2, BIT_NO);
+		while(b%multiplier!=0) {b = (byte)(b-b%multiplier);}
+		return b;
+	}
+	
 	public static RegisterEntry writeTo(RegisterEntry input, ArrayList<Byte> message){
 		Program.sysLog("BinaryOperator initializes writeTo for type "+input.type+"...");
 		int multiplier = (int)Math.pow(2, BIT_NO);
@@ -134,11 +160,9 @@ public class BinaryOperator {
 			while(i<size) {
 				Byte b = input.get(i);
 				if(start%4 != (i+1)%4) {
-				//if(start%4 != (i+2)%4) {
-				//if(start%4 != (i+3)%4) {
-				//if(start%4 != (i+4)%4) {
-					//if(b.intValue()<0) b = (byte) -b;
-					if(b%multiplier!=0) b = (byte)(b-b%multiplier);
+					
+					b = stripModulo(b);
+
 					if(x<message.size()) {
 						b = b>=0? (byte)(b+message.get(x)):(byte)(b-message.get(x));
 						input.set(i, b);
@@ -149,7 +173,10 @@ public class BinaryOperator {
 				i++;
 			}
 			Program.log("Message written to the image. Task accomplished.");
+			
+			while(!compare(translate(input),lastMessage)) {input = writeTo(input,message);}
 			return input;
+			
 			
 			/*case PNG: 
 				ArrayList<PNGChunk> content = new ArrayList<>();
@@ -183,7 +210,7 @@ public class BinaryOperator {
 		
 	}
 	
-	public static ArrayList<Byte> pngToBMP(ArrayList<Byte> input){
+	public static ArrayList<Byte> fileToBMP(ArrayList<Byte> input){
 		Program.log("Initializing conversion from PNG to BMP...");
 		byte[] data = Converter.ArrayListToByte(input);
 		Program.sysLog("Converter converted arrList to an array of size "+data.length);
@@ -209,7 +236,8 @@ public class BinaryOperator {
 		switch(input.type) {
 		case PNG:
 			PNGChunkCollector.collect(input);
-			input = new RegisterEntry(FileType.BMP,pngToBMP(input.content));
+		default:
+			input = new RegisterEntry(FileType.BMP,fileToBMP(input.content));
 		case BMP:
 			if(input.size()<14) {
 				Program.error("Provided image does not have enough bytes to even be considered a carrier. Its size is "+input.size());
@@ -235,7 +263,6 @@ public class BinaryOperator {
 			limit = byteNo/BinaryOperator.getCharSize();
 			Program.sysLog("PNG Done");
 			break;/**/
-		default:
 			break;
 		}
 

@@ -93,7 +93,6 @@ public class FileControler{
 			}
 		}
 		else {
-			Program.error("File Controler.fileToByteArray: choice is NULL");
 			return null;
 		}
 	}
@@ -126,7 +125,6 @@ public class FileControler{
 			}
 		}
 		else {
-			Program.error("File Controler.fileToByteArray: choice is NULL");
 			return null;
 		}
 	}
@@ -191,14 +189,11 @@ class BMPFilter extends FileFilter{
 	public boolean accept(File file) {
 		String ext = FileControler.getExtension(file);
 		if(ext == null) 	return true;
-		else if(ext.toLowerCase().equals(FileType.BMP.extension)||ext.toLowerCase().equals(FileType.PNG.extension)) return true;
-		//else if(ext.toLowerCase().equals("png")) return true;
-		else return false;
+		else {
+			for(FileType f: FileType.values()) {if(ext.equalsIgnoreCase(f.name())) return true;}
+			return false;
+		}
 	}
 
-	@Override
-	public String getDescription() {
-		return "Applicable Image Files";
-	}
-	
+	@Override public String getDescription() {return "Applicable Image Files";}
 }

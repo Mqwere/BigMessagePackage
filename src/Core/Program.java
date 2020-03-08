@@ -8,7 +8,7 @@ import Support.Entities.RegisterEntry;
 
 public class Program {
 	
-	public static final boolean LOG_ALL=false;
+	public static final boolean LOG_ALL=true;
 	
 	public static MainWindow mainWindow;
 	public static final int AREA_WIDTH 	= 440;

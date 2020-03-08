@@ -9,7 +9,7 @@ public class RegisterEntry {
 	public FileType type = null;
 	
 	public RegisterEntry(String ext) {
-		for(FileType type: FileType.values()) if(ext.equalsIgnoreCase(type.extension)) this.type = type;
+		for(FileType type: FileType.values()) if(ext.equalsIgnoreCase(type.name())) this.type = type;
 		if(type==null) type = FileType.BMP;
 		content  = new ArrayList<Byte>();
 	}
