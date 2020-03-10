@@ -15,6 +15,7 @@ import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 
 import Core.Program;
+import Support.Entities.Payload;
 import Support.Entities.RegisterEntry;
 import Support.Enums.FileType;
 
@@ -43,26 +44,30 @@ public class FileControler{
 	public static void compare (RegisterEntry tab1, RegisterEntry tab2) {
 		Program.sysLog("FileControler initializes comparison...");
 		communicate("Initiating comparison...");
+		int diffNo = 0, size = tab1.size();
 		if(tab1.size()!=tab2.size()) {
 			communicate("Files have different sizes!");
+			size = size>tab2.size()? tab2.size():size;
 		}
-		else {
-			int diffNo = 0;
-			for(int i=0; i<tab1.size(); i++) {
-				if(!tab1.get(i).equals(tab2.get(i))) diffNo++;
-			}
-			if(diffNo == tab1.size()) communicate("Images are completly different!");
-			else
-			if(diffNo>0){
-				DecimalFormat df = new DecimalFormat();
-				df.setMaximumFractionDigits(2);
-				communicate("There were "+diffNo+" differences out of "+tab1.size()+" bytes."
-						+ "\nThat makes rate of difference to be "+df.format((float)diffNo*100F/(float)tab1.size())+"%");
-			}
-			else {
-				communicate("Images are identical!");
+		
+		Byte byt1,byt2;
+		for(int i=0; i<size; i++) {
+			byt1=tab1.get(i); 
+			byt2=tab2.get(i);
+			if(!byt1.equals(byt2)) {
+				diffNo++;
 			}
 		}
+		
+		if(diffNo == size) communicate("Images are completly different!");
+		else
+		if(diffNo>0){
+			DecimalFormat df = new DecimalFormat();
+			df.setMaximumFractionDigits(2);
+			communicate("There were "+diffNo+" differences out of "+tab1.size()+" bytes."
+					+ "\nThat makes rate of difference to be "+df.format((float)diffNo*100F/(float)size)+"%");
+		}
+		else communicate("Images are identical!");
 		Program.sysLog("FileControler's comparison finished.");
 	}
 	
@@ -129,16 +134,69 @@ public class FileControler{
 		}
 	}
 	
+	public static Payload loadPayload(JFrame parent){
+		Program.sysLog("FileControler initializes loadPayload...");
+		int choice = fileChooser.showOpenDialog(parent);
+		File file;
+		if(choice == JFileChooser.APPROVE_OPTION) {
+			Stopper.start();
+			file  = fileChooser.getSelectedFile();
+			Program.log("Loading "+file.getAbsolutePath());
+			FileInputStream inStream;
+			try {
+				inStream = new FileInputStream(file);
+				int content;
+				ArrayList<Byte> temp = new  ArrayList<Byte>();
+				while((content = inStream.read()) !=-1) {temp.add((byte)(content/*-44*/));}
+				inStream.close();
+				Stopper.stop();
+				Program.log("Done. "+temp.size()+" bytes of data loaded.");	
+				Program.sysLog("FileControler loaded the payload.");
+				temp = Converter.contentToBin(temp);
+				Payload payload = new Payload(getExtension(file),temp);
+				BinaryOperator.lastMessage += BinaryOperator.binToStr(temp);
+				return payload;
+			} catch (Exception e) {
+				e.printStackTrace();
+				Program.error("FileControler.saveToFile: "+e.toString());
+				return null;
+			}
+		}
+		else return null;
+	}
+	
+	public static boolean savePayload(String file, ArrayList<Byte> input) {return savePayload(new File(file), input);}
+	
+	public static boolean savePayload(File file, ArrayList<Byte> input) {
+		Program.sysLog("FileControler initializes savePayload...");
+		FileOutputStream inStream;
+		try {
+			inStream = new FileOutputStream(file);
+			int content;
+			for(int i=0; i<input.size();i++) {
+				content = (int)input.get(i);
+				inStream.write(content/*+44*/);
+			}
+			inStream.close();
+			Program.sysLog("Payload saved succesfully. ("+file.getPath()+")");
+			return true;
+		} catch (IOException e) {
+			Program.error("FileControler.savePayload: "+e.toString());
+			return false;
+		}
+		
+	}
+	
 	public static boolean saveToDefault(RegisterEntry input) {
-		return saveToFile(new File(Program.DEFAULT_FILE), input);
+		return saveToFile(new File(Program.DEFAULT_FILE+".png"), input);
 	}
 	
 	public static boolean saveToFile(File file, RegisterEntry input) {
 		Program.sysLog("FileControler initializes saveToFile...");
 		FileOutputStream inStream;
-		switch(getExtension(file)){
+		String extension = getExtension(file); extension = extension!=null? extension.toLowerCase():extension;
+		switch(extension){
 			case "bmp":
-			case "BMP":
 			try {
 				inStream = new FileOutputStream(file);
 				int content;
@@ -156,11 +214,12 @@ public class FileControler{
 			}
 			default:
 				file = new File(file.getPath()+".png");
+				extension = "png";
 			case "png":
-			case "PNG"://TODO
+			//case "gif":
 			try {
 				BufferedImage image = ImageIO.read(new ByteArrayInputStream(Converter.ArrayListToByte(input.content)));
-				ImageIO.write(image,"png",file);
+				ImageIO.write(image,extension,file);
 				Program.log("File saved succesfully.\n("+file.getPath()+")");
 				Program.sysLog("File saved succesfully. ("+file.getPath()+")");
 				return true;

@@ -17,6 +17,7 @@ import Core.Program;
 import Support.BinaryOperator;
 import Support.FileControler;
 import Support.Entities.InputWindow;
+import Support.Entities.Payload;
 import Support.Entities.RegisterEntry;
 
 
@@ -32,7 +33,8 @@ public class MainWindow extends JFrame implements ActionListener{
 	JButton loadFile = new JButton("Load"),
 			compare	 = new JButton("Compare"),
 			writeTo	 = new JButton("WriteTo"),
-			translate= new JButton("Translate");
+			translate= new JButton("Translate"),
+			givePLD	 = new JButton("Add Payload");
 	
 	public MainWindow() {
 		setSize(200+Program.AREA_WIDTH, 640);
@@ -58,7 +60,7 @@ public class MainWindow extends JFrame implements ActionListener{
 	private void setUp(JComponent component) {
 		Rectangle rec = this.getBounds();
 		panel.add(component); 
-		component.setBounds(rec.width/32, ((1 + 15*multiplier++)*rec.height)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*5)/40); 
+		component.setBounds(rec.width/32, ((1 + 15*multiplier++)*rec.height)/80,  rec.width-Program.AREA_WIDTH-(rec.width/16)+((20*Program.AREA_WIDTH)/320), (rec.height*6)/40); 
 		
 		if(component.getClass()==JButton.class) {
 			JButton button = (JButton) component;
@@ -79,7 +81,8 @@ public class MainWindow extends JFrame implements ActionListener{
 		
 		setUp(compare);
 		setUp(writeTo);
-		setUp(translate); 
+		setUp(translate);
+		setUp(givePLD);
 		
 		panel.setLayout(null);
 		setContentPane(panel);		
@@ -91,14 +94,17 @@ public class MainWindow extends JFrame implements ActionListener{
 			compare		.setEnabled(false);
 			writeTo		.setEnabled(false);
 			translate	.setEnabled(false);
+			givePLD		.setEnabled(false);
 		}
 		else {
 			loadFile.setEnabled(true);
 			if(Program.register.size()>0) {
-				writeTo	.setEnabled(true);
-				translate.setEnabled(true);
+				writeTo		.setEnabled(true);
+				translate	.setEnabled(true);
+				givePLD		.setEnabled(true);
 			}
-			if(Program.register.size()>1) compare.setEnabled(true);
+			if(Program.register.size()>1) 
+				compare		.setEnabled(true);
 		}
 		
 	}
@@ -110,13 +116,13 @@ public class MainWindow extends JFrame implements ActionListener{
 		RegisterEntry prepImg = Program.getLastImage();
 		if(input.length()>Program.imageCharsLimit) {
 			Program.error("The message is too long for the given image, which can take up to "+Program.imageCharsLimit+" charas.");
-			if(input.length()>0) internal  = BinaryOperator.strToBin(input.substring(0, Program.imageCharsLimit-1)+'\4');
+			if(input.length()>0) internal  = BinaryOperator.strToBin("emp"+input.substring(0, Program.imageCharsLimit)+'\4');
 			else internal = null;
 		}
 		else {
-			internal  = BinaryOperator.strToBin(input+'\4');
+			internal  = BinaryOperator.strToBin("emp"+input+'\4');
 		}
-		if(internal!=null)FileControler.saveToFile(this,BinaryOperator.writeTo(prepImg, internal));
+		if(internal!=null)FileControler.saveToFile(this,BinaryOperator.writeTo(prepImg, new Payload("emp",internal)));
 	}
 
 	@Override
@@ -143,7 +149,23 @@ public class MainWindow extends JFrame implements ActionListener{
 		}
 		else
 		if(source == translate) {
-			Program.write("\n[Big Message Package Content]:\n"+BinaryOperator.translate(Program.getLastImage()));
+			String output = BinaryOperator.translate(Program.getLastImage());
+			if(output!=null) Program.write("\n[Big Message Package Content]:\n"+output);
+			else Program.write("AMADEUS AMADEUS. AMADEUS.");
+		}
+		else
+		if(source == givePLD) {
+			Payload payload = FileControler.loadPayload(this);
+			Program.sleep(1000);
+			if(payload!=null) {
+				if(payload.size()>Program.imageCharsLimit*2) Program.error("Payload is too big for the image to fit in");
+				else {
+					payload.sign();
+					RegisterEntry entity = BinaryOperator.writeTo(Program.getLastImage(), payload);
+					FileControler.saveToFile(this,entity);
+				}
+			}
+			else Program.error("Could not load payload.");
 		}
 		
 		lockAllButtons(false);

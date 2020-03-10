@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 
 import Core.Program;
 import Support.Entities.PNGChunk;
+import Support.Entities.Payload;
 import Support.Entities.RegisterEntry;
 import Support.Enums.ChunkType;
 import Support.Enums.FileType;
@@ -19,6 +20,11 @@ import Support.Enums.FileType;
 public class BinaryOperator {
 	public static final int BIT_NO = 4;
 	public static String lastMessage = new String();
+	
+	public static String getLastXChars(String input,int x) {
+		if(x<input.length()) {input = input.substring(input.length()-x);}
+		return input;
+	}
 	
 	public static boolean compare(String first, String second) {
 		int diffNo = 0, size;
@@ -32,7 +38,8 @@ public class BinaryOperator {
 		for(int i=0; i<size;i++) if(first.charAt(i)!=second.charAt(i)) diffNo++;
 		
 		if(result.length()>0) result+="\nAs far as we can check them, tho:\n";
-		result+=diffNo>0? "They are different on "+diffNo+" possitions.":"They are the same.";
+		result+=diffNo>0? "They are different on "+diffNo+" possitions.\n First String: '"+getLastXChars(first,10)+"'.\n Second String: '"+getLastXChars(second,10)+"'."
+				:"Strings are the same.";
 		
 		Program.sysLog(result);
 		
@@ -47,6 +54,14 @@ public class BinaryOperator {
 		return result;
 	}
 	
+	public static int getIntSize() {
+		int base = (32/BIT_NO),
+			add = (32%BIT_NO)>0? 1:0,
+			result = base + add;
+			
+		return result;
+	}
+	
 	public static int getCharSize() {
 		int base = (16/BIT_NO),
 			add = (16%BIT_NO)>0? 1:0,
@@ -55,10 +70,18 @@ public class BinaryOperator {
 		return result;
 	}
 	
+	public static int getBinSize() {
+		int base = (8/BIT_NO),
+			add = (8%BIT_NO)>0? 1:0,
+			result = base + add;
+		
+		return result;
+	}
+	
 	public static int getMultiplier() {return pow2(BIT_NO);}
 	
 	public static ArrayList<Byte> strToBin(String input) {
-		lastMessage = new String(); lastMessage += input;
+		lastMessage = new String(); lastMessage += input.substring(3,input.length()-1);
 		Program.sysLog("BinaryOperator initializes str->bin...");
 		ArrayList<Byte> internal = new ArrayList<Byte>();
 		/// char has 16 bits of data... so we are gonna need ceil(16/BIT_NO) places to fill our one chara with
@@ -75,6 +98,43 @@ public class BinaryOperator {
 		Program.sysLog("BinaryOperator finished str->bin");
 		if(compare(input,binToStr(internal))) return internal;
 		else return null;
+	}
+	
+	public static String findSequence(ArrayList<Byte> array, String search) {
+		String result = "";
+		int charSize 	= getCharSize(),
+			arrSize = array.size(),
+			multiplier 	= getMultiplier(),
+			x=0,
+			hitNo = 0;
+		while(x<arrSize-charSize) {
+			result = "";
+			for(int y=0; y<search.length();y++) {
+				int value = 0;
+				for(int i=0; i<charSize; i++) {
+					int part = array.get(x+i)*pow(multiplier,i);
+					part = part>=0? part:-part;
+					value += part;
+				}
+				value = value>=0? value:-value;
+				result+=(char)value;
+			}
+			if(result.equalsIgnoreCase(search)) hitNo++;
+			x++;
+		}
+		result = "findSequence '"+search+"':"+hitNo;
+		/*/
+		String content = binToStr(array), scrap;
+		hitNo = 0;
+		while(x<content.length()-search.length()) {
+			scrap = "";
+			for(int i=0; i<search.length();i++) scrap+=content.charAt(x+i);
+			if(scrap.equalsIgnoreCase(search)) hitNo++;
+			x++;
+		}
+		result += ",   "+hitNo;
+		/**/
+		return result;
 	}
 	
 	public static String binToStr(ArrayList<Byte> array) {
@@ -100,40 +160,56 @@ public class BinaryOperator {
 		return internal;
 	}
 	
-	/////////////////////////////////////////////////////////
+	public static ArrayList<Byte> translateBin(RegisterEntry input) {
+		ArrayList<Byte> internal = new ArrayList<Byte>();
+		int i 	 = input.get(10) 
+				 + input.get(11)*256 
+				 + input.get(12)*256*256 
+				 + input.get(13)*256*256*256,
+			size = input.size(),//-64*4,
+			multiplier = (int)Math.pow(2, BIT_NO),
+			start = i;
+
+		while(i<size) {
+			Byte b = input.get(i);
+			if(start%4 != (i+1)%4) {
+				b =  (byte)(b%multiplier);
+				internal.add(b);
+			}
+			i++;
+		}
+		return internal;
+	}
 	
 	public static String translate(RegisterEntry input) {
 		Program.sysLog("BinaryOperator initializes translation for type "+input.type+"...");
-		switch(input.type) {
-			case PNG:
-			case BMP:
-				ArrayList<Byte> internal = new ArrayList<Byte>();
-				int i 	 = input.get(10) 
-						 + input.get(11)*256 
-						 + input.get(12)*256*256 
-						 + input.get(13)*256*256*256,
-					size = input.size(),//-64*4,
-					multiplier = (int)Math.pow(2, BIT_NO),
-					start = i;
+		ArrayList<Byte> internal = translateBin(input), trimmed = Payload.trim(internal), prepped = new ArrayList<Byte>();
+		
+		/*/
+		Program.sysLog(findSequence(internal,"\4"));
+		Program.sysLog(findSequence(internal,"donezo"));
+		Program.sysLog(findSequence(internal,"1"));
+		Program.sysLog(findSequence(internal,"emp"));
+		Program.sysLog(findSequence(internal,"txt"));
+		/**/
+		
+		/**/
+		Program.sysLog("BinaryOperator finished translating.");
+		String	content = BinaryOperator.binToStr(internal),
+				pldType = content.substring(0, 3),
+				subtent = BinaryOperator.binToStr(trimmed);
+		if(pldType.equalsIgnoreCase("emp")) return content.substring(3);
+		else {
+			String dropZone = Program.DEFAULT_FILE+"."+pldType.toLowerCase();
+			Program.log("Payload within is a file of type "+pldType.toUpperCase()+"."
+					+ "\n Program will now save it to the default drop zone."
+					+ "\n ("+dropZone+")");
 
-				while(i<size) {
-					Byte b = input.get(i);
-					if(start%4 != (i+1)%4) {
-						b =  (byte)(b%multiplier);
-						internal.add(b);
-					}
-					i++;
-				}
-				Program.sysLog("BinaryOperator finished translating.");
-				return BinaryOperator.binToStr(internal);
-			/*case PNG:
-				Program.sysLog("BinaryOperator finished translating.");
-				return "unimplemented";/**/
-				
-			default: 
-				Program.sysLog("BinaryOperator finished translating.");
-				return "wtf is this type even?";
+			prepped = Converter.binToContent(trimmed);
+			FileControler.savePayload(dropZone, prepped);
 		}
+		/**/
+		return null;
 	}
 	
 	public static byte stripModulo(byte b) {
@@ -142,7 +218,7 @@ public class BinaryOperator {
 		return b;
 	}
 	
-	public static RegisterEntry writeTo(RegisterEntry input, ArrayList<Byte> message){
+	public static RegisterEntry writeTo(RegisterEntry input, Payload message){
 		Program.sysLog("BinaryOperator initializes writeTo for type "+input.type+"...");
 		int multiplier = (int)Math.pow(2, BIT_NO);
 		switch(input.type) {
@@ -172,46 +248,20 @@ public class BinaryOperator {
 				}
 				i++;
 			}
-			Program.log("Message written to the image. Task accomplished.");
+			Program.log("Payload written to the image. Task completed.");
 			
-			while(!compare(translate(input),lastMessage)) {input = writeTo(input,message);}
+			/**/if(message.type.equals("emp"))/**/ while(!compare(translate(input),lastMessage)) {input = writeTo(input,message);}
+			//else input = writeTo(input,message);
 			return input;
-			
-			
-			/*case PNG: 
-				ArrayList<PNGChunk> content = new ArrayList<>();
-				content.addAll(PNGChunkCollector.getLastList());
-				int chunkNo = content.size(), px = 0;
-				for(int p=0; p<chunkNo;p++) {
-					PNGChunk chunk = content.get(p);
-					if(chunk.type==ChunkType.IDAT) {
-						int fstart = chunk.startIndex, fend = chunk.endIndex, pi = fstart;
-						while(pi<fend) {
-							Byte b = input.get(pi);
-							if(fstart%4 != (pi+1)%4) {
-							//if(b.intValue()<0) b = (byte) -b;
-							if(b%multiplier!=0) b = (byte)(b-b%multiplier);
-							if(px<message.size()) {
-								b = b>=0? (byte)(b+message.get(px)):(byte)(b-message.get(px));
-								input.set(pi, b);
-								px++;
-							}
-							else break;
-							pi++;
-							}
-						}
-					}
-				}
-				
-				return input;/**/
-			
+
 			default: return input;
 		}
 		
 	}
 	
-	public static ArrayList<Byte> fileToBMP(ArrayList<Byte> input){
-		Program.log("Initializing conversion from PNG to BMP...");
+	public static ArrayList<Byte> fileToBMP(RegisterEntry entry){
+		ArrayList<Byte> input = entry.content;
+		Program.log("Initializing conversion from "+entry.type+" to BMP...");
 		byte[] data = Converter.ArrayListToByte(input);
 		Program.sysLog("Converter converted arrList to an array of size "+data.length);
         BufferedImage imag;
@@ -237,7 +287,7 @@ public class BinaryOperator {
 		case PNG:
 			PNGChunkCollector.collect(input);
 		default:
-			input = new RegisterEntry(FileType.BMP,fileToBMP(input.content));
+			input = new RegisterEntry(FileType.BMP,fileToBMP(input));
 		case BMP:
 			if(input.size()<14) {
 				Program.error("Provided image does not have enough bytes to even be considered a carrier. Its size is "+input.size());
@@ -266,7 +316,7 @@ public class BinaryOperator {
 			break;
 		}
 
-		limit--;
+		limit-=4;
 		Program.imageCharsLimit = limit;
 		Program.log("Image analyzed - "+limit*2+" bytes ready to be written on.");
 		
