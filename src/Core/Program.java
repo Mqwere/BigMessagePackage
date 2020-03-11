@@ -3,14 +3,14 @@ package Core;
 import java.util.ArrayList;
 
 import Core.MainWindow;
-import Support.FileControler;
+import Support.TestManager;
 import Support.Entities.RegisterEntry;
 
 public class Program {
 	
-	public static final boolean LOG_ALL=true;
+	public static boolean LOG_ALL=true;
 	
-	public static MainWindow mainWindow;
+	public static MainWindow mainWindow = null;
 	public static final int AREA_WIDTH 	= 440;
 	public static final String DEFAULT_FILE= "C:\\Users\\" + System.getProperty("user.name") + "\\Desktop\\BMPFile";
 	public static final int LINE_LENGTH = ((AREA_WIDTH/10));
@@ -19,7 +19,12 @@ public class Program {
 	public static ArrayList<RegisterEntry> register = new ArrayList<>();
 
 	public static void main(String[] args) {
-		/**/
+		
+		TestManager.signsTest();
+		
+		//for(int i = 1;i<444;i++) TestManager.payloadTest(i);
+		
+		/*/
 		Program.mainWindow = new MainWindow();
 		FileControler.setUp();
 		/**/
