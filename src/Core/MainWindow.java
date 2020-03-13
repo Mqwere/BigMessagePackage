@@ -15,6 +15,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import Core.Program;
 import Support.BinaryOperator;
+import Support.Converter;
 import Support.FileControler;
 import Support.Entities.InputWindow;
 import Support.Entities.Payload;

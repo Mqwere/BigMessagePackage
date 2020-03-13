@@ -3,6 +3,7 @@ package Core;
 import java.util.ArrayList;
 
 import Core.MainWindow;
+import Support.FileControler;
 import Support.TestManager;
 import Support.Entities.RegisterEntry;
 
@@ -20,9 +21,11 @@ public class Program {
 
 	public static void main(String[] args) {
 		
-		TestManager.signsTest();
+		TestManager.trimmingTest();
 		
-		//for(int i = 1;i<444;i++) TestManager.payloadTest(i);
+		//TestManager.signsTest(5000,5000);
+		
+		//TestManager.payloadTest(100000);
 		
 		/*/
 		Program.mainWindow = new MainWindow();
@@ -56,7 +59,8 @@ public class Program {
 			out = (String) message;
 		}
 		else out = message.toString();
-		if(LOG_ALL) System.out.println("[LOG] "+out);
+		if(LOG_ALL) System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+				+ "\n"+out);
 	}
 	
 	public static void error(Object message) {

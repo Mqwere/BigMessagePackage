@@ -183,7 +183,7 @@ public class BinaryOperator {
 	
 	public static String translate(RegisterEntry input) {
 		Program.sysLog("BinaryOperator initializes translation for type "+input.type+"...");
-		ArrayList<Byte> internal = translateBin(input), trimmed = Payload.trim(internal), prepped = new ArrayList<Byte>();
+		ArrayList<Byte> internal = translateBin(input);
 		
 		/*/
 		Program.sysLog(findSequence(internal,"\4"));
@@ -196,17 +196,19 @@ public class BinaryOperator {
 		/**/
 		Program.sysLog("BinaryOperator finished translating.");
 		String	content = BinaryOperator.binToStr(internal),
-				pldType = content.substring(0, 3),
-				subtent = BinaryOperator.binToStr(trimmed);
+				pldType = content.substring(0, 3);
 		if(pldType.equalsIgnoreCase("emp")) return content.substring(3);
 		else {
 			String dropZone = Program.DEFAULT_FILE+"."+pldType.toLowerCase();
 			Program.log("Payload within is a file of type "+pldType.toUpperCase()+"."
 					+ "\n Program will now save it to the default drop zone."
 					+ "\n ("+dropZone+")");
-
-			prepped = Converter.binToContent(trimmed);
-			FileControler.savePayload(dropZone, prepped);
+			
+			Payload payload = new Payload(input.type.name(),internal);
+			payload.trim();
+			/**/
+			FileControler.savePayload(dropZone, payload.content);
+			/**/
 		}
 		/**/
 		return null;
@@ -234,13 +236,15 @@ public class BinaryOperator {
 			Program.sysLog("Write - start: "+start+", size: "+size);
 
 			while(i<size) {
-				Byte b = input.get(i);
+				Byte b = input.get(i), m;
 				if(start%4 != (i+1)%4) {
 					
 					b = stripModulo(b);
 
 					if(x<message.size()) {
-						b = b>=0? (byte)(b+message.get(x)):(byte)(b-message.get(x));
+						m = message.get(x); 
+						m = m<0? (byte)(-m):m;
+						b = b>=0? (byte)(b+m):(byte)(b-m);
 						input.set(i, b);
 						x++;
 					}

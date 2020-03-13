@@ -152,7 +152,7 @@ public class FileControler{
 				Stopper.stop();
 				Program.log("Done. "+temp.size()+" bytes of data loaded.");	
 				Program.sysLog("FileControler loaded the payload.");
-				temp = Converter.contentToBin(temp);
+				//temp = Converter.contentToBin(temp);
 				Payload payload = new Payload(getExtension(file),temp);
 				BinaryOperator.lastMessage += BinaryOperator.binToStr(temp);
 				return payload;

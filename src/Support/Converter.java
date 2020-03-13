@@ -51,6 +51,7 @@ public class Converter {
 			multiplier = BinaryOperator.getMultiplier();
 		for(int x=0;x<input.size();x++) {
 			int value = input.get(x);
+			value = value<0? (byte)(-value):value;
 			for(int i=0;i<binSize;i++) {
 				internal.add((byte)(value%multiplier));
 				value = value/multiplier;
@@ -92,7 +93,7 @@ public class Converter {
 			internal.add((byte)value);
 			x+=binSize;
 		}
-		internal = decreaseUnderZero(internal);
+		//internal = decreaseUnderZero(internal);
 		return internal;
 	}
 	
